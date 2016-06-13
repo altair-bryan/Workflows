@@ -2,6 +2,7 @@ var gulp = require('gulp'),
     gutil = require('gulp-util'),
     coffee = require('gulp-coffee');
     browserify = require('gulp-browserify');
+    compass = require('gulp-compass');
     concat = require('gulp-concat');
 
 var coffeeSources = ['components/coffee/tagline.coffee'];
@@ -11,6 +12,8 @@ var jsSources = [
     'components/scripts/tagline.js',
     'components/scripts/template.js'
 ];
+
+var sassSources = ['components/sass/style.scss']
 
 gulp.task('coffee', function() {
     gulp.src(coffeeSources) // Get source files with gulp.src
@@ -24,4 +27,15 @@ gulp.task('js', function() {
         .pipe(concat('script.js')) // Sends it through a gulp plugin
         .pipe(browserify())
         .pipe(gulp.dest('builds/development/js')) // Outputs the file in the destination folder
+});
+
+gulp.task('compass', function() {
+    gulp.src(sassSources) // Get source files with gulp.src
+        .pipe(compass({
+            sass: 'components/sass',
+            images: 'builds/development/images',
+            style: 'expanded'
+        }) // Sends it through a gulp plugin
+        .on('error', gutil.log))
+        .pipe(gulp.dest('builds/development/css')) // Outputs the file in the destination folder
 });
