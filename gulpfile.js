@@ -40,4 +40,10 @@ gulp.task('compass', function() {
         .pipe(gulp.dest('builds/development/css')) // Outputs the file in the destination folder
 });
 
+gulp.task('watch', function() {
+    gulp.watch(coffeeSources, ['coffee']) // Monitor these files
+    gulp.watch(jsSources, ['js']) // Monitor these files
+    gulp.watch('components/sass/*.scss', ['compass']) // Monitor these files
+});
+
 gulp.task('default', ['coffee','js','compass']);
