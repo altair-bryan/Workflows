@@ -15,16 +15,18 @@ var jsSources = [
 ];
 
 var sassSources = ['components/sass/style.scss']
+var htmlSources = ['builds/development/*.html']
+var jsonSources = ['builds/development/js/*.json']
 
 gulp.task('coffee', function() {
-    gulp.src(coffeeSources) // Get source files with gulp.src
+    gulp.src(coffeeSources) // Get source files with gulp.src variable above
         .pipe(coffee({ bare: true }) // Sends it through a gulp plugin
             .on('error', gutil.log)) // on error log the error
         .pipe(gulp.dest('components/scripts')) // Outputs the file in the destination folder
 });
 
 gulp.task('js', function() {
-    gulp.src(jsSources) // Get source files with gulp.src
+    gulp.src(jsSources) // Get source files with gulp.src variable above
         .pipe(concat('script.js')) // Sends it through a gulp plugin
         .pipe(browserify())
         .pipe(gulp.dest('builds/development/js')) // Outputs the file in the destination folder
@@ -32,7 +34,7 @@ gulp.task('js', function() {
 });
 
 gulp.task('compass', function() {
-    gulp.src(sassSources) // Get source files with gulp.src
+    gulp.src(sassSources) // Get source files with gulp.src variable above
         .pipe(compass({
             sass: 'components/sass',
             images: 'builds/development/images',
@@ -47,13 +49,25 @@ gulp.task('watch', function() {
     gulp.watch(coffeeSources, ['coffee']) // Monitor these files
     gulp.watch(jsSources, ['js']) // Monitor these files
     gulp.watch('components/sass/*.scss', ['compass']) // Monitor these files
+    gulp.watch(htmlSources, ['html']);
+    gulp.watch(jsonSources, ['json']);
 });
 
-gulp.task('connect', function(){
+gulp.task('connect', function() {
     connect.server({
         root: 'builds/development/',
         livereload: true
     });
 });
 
-gulp.task('default', ['coffee','js','compass', 'connect', 'watch']);
+gulp.task('html', function() {
+    gulp.src(htmlSources) // Get source files with gulp.src variable above
+    .pipe(connect.reload()) // Run connect task and reload page
+});
+
+gulp.task('json', function() {
+    gulp.src(jsonSources) // Get source files with gulp.src variable above
+    .pipe(connect.reload()) // Run connect task and reload page
+});
+
+gulp.task('default', ['html', 'json', 'coffee', 'js', 'compass', 'connect', 'watch']);
