@@ -1,3 +1,4 @@
+// Gulp variables set
 var gulp = require('gulp'),
     gutil = require('gulp-util'),
     coffee = require('gulp-coffee');
@@ -6,17 +7,39 @@ var gulp = require('gulp'),
     connect = require('gulp-connect');
     concat = require('gulp-concat');
 
-var coffeeSources = ['components/coffee/tagline.coffee'];
-var jsSources = [
+// Enviorment variables set
+var env,
+    coffeeSources,
+    jsSources,
+    sassSources,
+    htmlSources,
+    jsonSources,
+    outputDir,
+    sassStyle;
+
+// Enviorment NODE_ENV is production or development
+env = process.env.NODE_ENV || 'development';
+
+if (env==='development') {
+    outputDir = 'builds/development/';
+    sassStyle = 'expanded';
+    gutil.log('in development enviorment');
+} else {
+    outputDir = 'builds/production/';
+    sassStyle = 'compressed';
+    gutil.log('in production enviorment');
+}
+
+coffeeSources = ['components/coffee/tagline.coffee'];
+jsSources = [
     'components/scripts/rclick.js',
     'components/scripts/pixgrid.js',
     'components/scripts/tagline.js',
     'components/scripts/template.js'
 ];
-
-var sassSources = ['components/sass/style.scss']
-var htmlSources = ['builds/development/*.html']
-var jsonSources = ['builds/development/js/*.json']
+sassSources = ['components/sass/style.scss']
+htmlSources = [outputDir + '*.html']
+jsonSources = [outputDir + 'js/*.json']
 
 gulp.task('coffee', function() {
     gulp.src(coffeeSources) // Get source files with gulp.src variable above
@@ -28,20 +51,22 @@ gulp.task('coffee', function() {
 gulp.task('js', function() {
     gulp.src(jsSources) // Get source files with gulp.src variable above
         .pipe(concat('script.js')) // Sends it through a gulp plugin
-        .pipe(browserify())
-        .pipe(gulp.dest('builds/development/js')) // Outputs the file in the destination folder
+        .pipe(browserify()) // Run browserify
+        .pipe(gulp.dest(outputDir + 'js')) // Outputs the file in the destination folder
         .pipe(connect.reload()) // Run connect task and reload page
 });
 
 gulp.task('compass', function() {
     gulp.src(sassSources) // Get source files with gulp.src variable above
         .pipe(compass({
-            sass: 'components/sass',
-            images: 'builds/development/images',
-            style: 'expanded'
+            sass: 'components/sass', // Compress all sass files from this directory
+            image: outputDir + 'images', // outputDir variable path set from enviorment variables
+            debug: true, // Debug if there is an issue
+            sourcemap: true, // Sourcemap for SASS
+            style: sassStyle // Variable set from enviorment variables above
         }) // Sends it through a gulp plugin
-        .on('error', gutil.log))
-        .pipe(gulp.dest('builds/development/css')) // Outputs the file in the destination folder
+        .on('error', gutil.log)) // Log something on error
+        .pipe(gulp.dest(outputDir + 'css')) // Outputs the file in the destination folder
         .pipe(connect.reload()) // Run connect task and reload page
 });
 
@@ -49,15 +74,15 @@ gulp.task('watch', function() {
     gulp.watch(coffeeSources, ['coffee']) // Monitor these files
     gulp.watch(jsSources, ['js']) // Monitor these files
     gulp.watch('components/sass/*.scss', ['compass']) // Monitor these files
-    gulp.watch(htmlSources, ['html']);
-    gulp.watch(jsonSources, ['json']);
+    gulp.watch(htmlSources, ['html']); // Monitor these files
+    gulp.watch(jsonSources, ['json']); // Monitor these files
 });
 
 gulp.task('connect', function() {
     connect.server({
-        root: 'builds/development/',
-        livereload: true
-    });
+        root: outputDir, // root is outputDir a variable up top based on enviorment
+        livereload: true // turn livereload on
+    }); // connect to server and set livereload work
 });
 
 gulp.task('html', function() {
