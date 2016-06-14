@@ -5,6 +5,8 @@ var gulp = require('gulp'),
     browserify = require('gulp-browserify');
     compass = require('gulp-compass');
     connect = require('gulp-connect');
+    gulpif = require('gulp-if'),
+    uglify = require('gulp-uglify'),
     concat = require('gulp-concat');
 
 // Enviorment variables set
@@ -52,6 +54,7 @@ gulp.task('js', function() {
     gulp.src(jsSources) // Get source files with gulp.src variable above
         .pipe(concat('script.js')) // Sends it through a gulp plugin
         .pipe(browserify()) // Run browserify
+        .pipe(gulpif(env === 'production', uglify()))
         .pipe(gulp.dest(outputDir + 'js')) // Outputs the file in the destination folder
         .pipe(connect.reload()) // Run connect task and reload page
 });
