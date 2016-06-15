@@ -7,6 +7,8 @@ var gulp = require('gulp'),
     connect = require('gulp-connect');
     gulpif = require('gulp-if'),
     uglify = require('gulp-uglify'),
+    minifyHTML = require('gulp-minify-html'),
+    jsonminify = require('gulp-jsonminify'),
     concat = require('gulp-concat');
 
 // Enviorment variables set
@@ -77,8 +79,8 @@ gulp.task('watch', function() {
     gulp.watch(coffeeSources, ['coffee']) // Monitor these files
     gulp.watch(jsSources, ['js']) // Monitor these files
     gulp.watch('components/sass/*.scss', ['compass']) // Monitor these files
-    gulp.watch(htmlSources, ['html']); // Monitor these files
-    gulp.watch(jsonSources, ['json']); // Monitor these files
+    gulp.watch('builds/development/*.html', ['html']); // Monitor these files
+    gulp.watch('builds/development/*.json', ['json']); // Monitor these files
 });
 
 gulp.task('connect', function() {
@@ -89,13 +91,17 @@ gulp.task('connect', function() {
 });
 
 gulp.task('html', function() {
-    gulp.src(htmlSources) // Get source files with gulp.src variable above
-    .pipe(connect.reload()) // Run connect task and reload page
+    gulp.src('builds/development/*.html') // Get source files with gulp.src variable above
+        .pipe(gulpif(env === 'production', minifyHTML()))
+        .pipe(gulpif(env === 'production', gulp.dest(outputDir)))
+        .pipe(connect.reload()) // Run connect task and reload page
 });
 
 gulp.task('json', function() {
-    gulp.src(jsonSources) // Get source files with gulp.src variable above
-    .pipe(connect.reload()) // Run connect task and reload page
+    gulp.src('builds/development/js/*.json') // Get source files with gulp.src variable above
+        .pipe(gulpif(env === 'production', jsonminify()))
+        .pipe(gulpif(env === 'production', gulp.dest('builds/production/js')))
+        .pipe(connect.reload()) // Run connect task and reload page
 });
 
 gulp.task('default', ['html', 'json', 'coffee', 'js', 'compass', 'connect', 'watch']);
